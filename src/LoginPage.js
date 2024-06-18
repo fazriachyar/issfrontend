@@ -12,7 +12,7 @@ export default function LoginPage() {
     try {
       const payload = { email, password };
       const response = await axios.post(
-        "http://localhost:8000/api/login",
+        "http://iss.biz.id/be/api/login",
         payload
       );
 

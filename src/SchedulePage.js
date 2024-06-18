@@ -77,7 +77,7 @@ const SchedulePage = () => {
     const fetchSchedules = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/schedules",
+          "http://iss.biz.id/be/api/schedules",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -212,7 +212,7 @@ const SchedulePage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/schedules",
+        "http://iss.biz.id/be/api/schedules",
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -235,7 +235,7 @@ const SchedulePage = () => {
     if (status !== "Approved") {
       try {
         // Mengirim request ke endpoint approve
-        await axios.put(`http://localhost:8000/api/schedules/${id}`,{
+        await axios.put(`http://iss.biz.id/be/api/schedules/${id}`,{
 					'status': 'Approved'
 				}, {
           headers: { Authorization: `Bearer ${token}` },
@@ -254,7 +254,7 @@ const SchedulePage = () => {
   const handleUpdate = async (id, updatedSchedule) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/schedules/${id}`,
+        `http://iss.biz.id/be/api/schedules/${id}`,
         updatedSchedule,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -275,7 +275,7 @@ const SchedulePage = () => {
     if (scheduleToDelete && scheduleToDelete.status !== "Approved") {
       try {
         const response = await axios.delete(
-          `http://localhost:8000/api/schedules/${scheduleToDelete.id}`,
+          `http://iss.biz.id/be/api/schedules/${scheduleToDelete.id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
