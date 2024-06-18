@@ -55,6 +55,9 @@ const CustomNavbar = () => {
                 <NavDropdown.Item as={Link} to="/jenis-pekerjaan">
                   Jenis Pekerjaan
                 </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/lokasi">
+                  lokasi
+                </NavDropdown.Item>
               </NavDropdown>
               {/* ... */}
             </Nav>
