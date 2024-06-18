@@ -17,7 +17,7 @@ const LokasiPage = () => {
 
   const fetchLokasi = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/lokasi", {
+      const response = await axios.get("http://iss.biz.id/be/api/lokasi", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLokasi(response.data);
@@ -35,13 +35,13 @@ const LokasiPage = () => {
     try {
       const response = selectedLokasi
         ? await axios.put(
-            `http://127.0.0.1:8000/api/lokasi/${selectedLokasi.id}`,
+            `http://iss.biz.id/be/api/lokasi/${selectedLokasi.id}`,
             formValues,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
-        : await axios.post("http://127.0.0.1:8000/api/lokasi", formValues, {
+        : await axios.post("http://iss.biz.id/be/api/lokasi", formValues, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -60,7 +60,7 @@ const LokasiPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/lokasi/${id}`, {
+      await axios.delete(`http://iss.biz.id/be/api/lokasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchLokasi(); // Refresh data

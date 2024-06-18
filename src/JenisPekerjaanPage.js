@@ -17,7 +17,7 @@ const JenisPekerjaanPage = () => {
 
   const fetchJenisPekerjaan = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/jenis_pekerjaan", {
+      const response = await axios.get("http://iss.biz.id/be/api/jenis_pekerjaan", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setJenisPekerjaan(response.data);
@@ -35,13 +35,13 @@ const JenisPekerjaanPage = () => {
     try {
       const response = selectedJenisPekerjaan
         ? await axios.put(
-            `http://127.0.0.1:8000/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
+            `http://iss.biz.id/be/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
             formValues,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
-        : await axios.post("http://127.0.0.1:8000/api/jenis_pekerjaan", formValues, {
+        : await axios.post("http://iss.biz.id/be/api/jenis_pekerjaan", formValues, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -60,7 +60,7 @@ const JenisPekerjaanPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/jenis_pekerjaan/${id}`, {
+      await axios.delete(`http://iss.biz.id/be/api/jenis_pekerjaan/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchJenisPekerjaan(); // Refresh data

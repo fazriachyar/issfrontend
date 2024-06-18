@@ -92,7 +92,7 @@ const SchedulePage = () => {
       const token = localStorage.getItem("token");
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/jenis_pekerjaan",
+          "http://iss.biz.id/be/api/jenis_pekerjaan",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -106,7 +106,7 @@ const SchedulePage = () => {
     const fetchLokasi = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/lokasi", {
+        const response = await axios.get("http://iss.biz.id/be/api/lokasi", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLokasi(response.data);
@@ -118,7 +118,7 @@ const SchedulePage = () => {
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/users", {
+        const response = await axios.get("http://iss.biz.id/be/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUsers(response.data);
