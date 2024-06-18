@@ -12,12 +12,13 @@ export default function LoginPage() {
     try {
       const payload = { email, password };
       const response = await axios.post(
-        "http://iss.biz.id/be/api/login",
+        `${process.env.REACT_APP_API_URL}/api/login`,
         payload
       );
 
       if (response.data.success) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user_id", response.data.user.id);
         localStorage.setItem("username", response.data.user.name); // Menyimpan token di localStorage
         navigate("/schedules"); // Redirect ke halaman jadwal
       }

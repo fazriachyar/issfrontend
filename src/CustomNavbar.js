@@ -1,9 +1,10 @@
 import React from "react";
-import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom"; // Gunakan useNavigate
+import { Nav, NavDropdown } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import { FaCalendarAlt, FaBriefcase, FaMapMarkerAlt } from "react-icons/fa"; // Contoh ikon
 
 const CustomNavbar = () => {
-  const navigate = useNavigate(); // Hook untuk navigasi
+  const navigate = useNavigate();
   const username = localStorage.getItem("username");
   const initials = username
     ? username
@@ -12,76 +13,57 @@ const CustomNavbar = () => {
         .join("")
     : "NN";
 
-  // Fungsi untuk menangani logout
   const handleLogout = () => {
-    localStorage.clear(); // Menghapus semua data di localStorage
-    navigate("/"); // Navigasi kembali ke halaman login
+    localStorage.clear();
+    navigate("/");
   };
 
   return (
-    <>
-      <style type="text/css">
-        {`
-          .initials-circle {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background-color: #007bff;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 10px;
-            cursor: pointer; // Menambahkan pointer ketika hover
+    <div style={{ display: "flex", height: "100vh" }}>
+      <div style={{ width: "250px", background: "#f8f9fa", padding: "10px" }}>
+        <h2>ISS HIGHSCOPE</h2>
+        <Nav className="flex-column">
+          <Nav.Link as={Link} to="/schedules">
+            <FaCalendarAlt /> Jadwal
+          </Nav.Link>
+          <Nav.Link as={Link} to="/jenis-pekerjaan">
+            <FaBriefcase /> Jenis Pekerjaan
+          </Nav.Link>
+          <Nav.Link as={Link} to="/lokasi">
+            <FaMapMarkerAlt /> Lokasi
+          </Nav.Link>
+          {/* ... other nav links with icons ... */}
+        </Nav>
+      </div>
+      <div style={{ flex: 1, padding: "10px" }}>
+        {/* Main content goes here */}
+      </div>
+      <div style={{ position: "absolute", top: 0, right: 0, padding: "10px" }}>
+        <NavDropdown
+          title={
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ marginRight: "10px" }}>{username}</span>
+              <div className="initials-circle">{initials}</div>
+            </div>
           }
-          .navbar .dropdown-toggle::after {
-            display: none;
-          }
-        `}
-      </style>
-      <Navbar bg="light" expand="lg">
-        <Container>
-          <Navbar.Brand as={Link} to="/">
-            ISS HIGHSCOPE
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              {/* Tambahkan list menu di sini */}
-              <NavDropdown title="Manajemen" id="basic-nav-dropdown">
-                <NavDropdown.Item as={Link} to="/schedules">
-                  Jadwal
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/jenis-pekerjaan">
-                  Jenis Pekerjaan
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/lokasi">
-                  lokasi
-                </NavDropdown.Item>
-              </NavDropdown>
-              {/* ... */}
-            </Nav>
-            <Nav>
-              <Navbar.Text>
-                {username}
-              </Navbar.Text>
-              {/* Dropdown untuk Profile dan Logout */}
-              <NavDropdown
-                title={<div className="initials-circle">{initials}</div>}
-                id="nav-dropdown"
-              >
-                <NavDropdown.Item as={Link} to="/profile">
-                  Profile
-                </NavDropdown.Item>
-                <NavDropdown.Item onClick={handleLogout}>
-                  Logout
-                </NavDropdown.Item>
-              </NavDropdown>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-    </>
+          id="nav-dropdown"
+          align="end"
+          drop="down"
+          renderMenuOnMount={true}
+        >
+          <NavDropdown.Item as={Link} to="/profile">
+            Profile
+          </NavDropdown.Item>
+          <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+        </NavDropdown>
+      </div>
+    </div>
   );
 };
 

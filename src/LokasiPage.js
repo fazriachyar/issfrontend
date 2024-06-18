@@ -17,7 +17,7 @@ const LokasiPage = () => {
 
   const fetchLokasi = async () => {
     try {
-      const response = await axios.get("http://iss.biz.id/be/api/lokasi", {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/lokasi`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLokasi(response.data);
@@ -35,21 +35,30 @@ const LokasiPage = () => {
     try {
       const response = selectedLokasi
         ? await axios.put(
-            `http://iss.biz.id/be/api/lokasi/${selectedLokasi.id}`,
+            `${process.env.REACT_APP_API_URL}/api/lokasi/${selectedLokasi.id}`,
             formValues,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
-        : await axios.post("http://iss.biz.id/be/api/lokasi", formValues, {
+        : await axios.post(`${process.env.REACT_APP_API_URL}/api/lokasi`, formValues, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
       fetchLokasi(); // Refresh data
       setShowModal(false);
+      setSelectedLokasi(null);
+      setFormValues({ nama: "" });
+      setShowModal(false); // Tutup modal
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleAddClick = () => {
+    setSelectedLokasi(null); // Reset selectedLokasi
+    setFormValues({ nama: "" }); // Reset formValues
+    setShowModal(true); // Buka modal
   };
 
   const handleEditClick = (lokasi) => {
@@ -60,7 +69,7 @@ const LokasiPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://iss.biz.id/be/api/lokasi/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/lokasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchLokasi(); // Refresh data
@@ -70,17 +79,14 @@ const LokasiPage = () => {
   };
 
   return (
-    <>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <CustomNavbar />
-      <Container className="mt-5">
-        {/* Konten LokasiPage */}
-        <Container className="mt-5">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="mb-0">Manajemen Lokasi</h2>
-            <Button variant="primary" onClick={() => setShowModal(true)}>
-              Tambah Lokasi
-            </Button>
-          </div>
+      <div style={{ flex: 1, padding: "20px" }}>
+        <Container>
+          <h2>Manajemen Lokasi</h2>
+          <Button variant="primary" onClick={handleAddClick} className="my-3">
+            Tambah Lokasi
+          </Button>
 
           <Table striped bordered hover>
             <thead>
@@ -138,9 +144,12 @@ const LokasiPage = () => {
               </Form>
             </Modal.Body>
           </Modal>
+          <Modal show={showModal} onHide={() => setShowModal(false)}>
+            {/* ... Modal content ... */}
+          </Modal>
         </Container>
-      </Container>
-    </>
+      </div>
+    </div>
   );
 };
 

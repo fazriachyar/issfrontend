@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Modal, Button, Form } from "react-bootstrap";
-import { BsCheckCircle } from "react-icons/bs";
+import {
+  Modal,
+  Button,
+  Form,
+  Table,
+  Tooltip,
+  OverlayTrigger,
+} from "react-bootstrap";
+import {
+  BsCheckCircle,
+  BsPencilSquare,
+  BsTrash,
+  BsInfoCircle,
+} from "react-icons/bs";
 import CustomNavbar from "./CustomNavbar";
 
 const EditableCell = ({ value, onDoubleClick, onChange, name, type }) => {
@@ -56,6 +68,58 @@ const ConfirmDeleteModal = ({ show, handleClose, handleConfirm }) => {
   );
 };
 
+const ScheduleDetailModal = ({ show, handleClose, scheduleDetail }) => {
+  return (
+    <Modal show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Detail Jadwal</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>
+          <strong>Jam Kerja:</strong> {scheduleDetail.jamMulai} -{" "}
+          {scheduleDetail.jamSelesai}
+        </p>
+        <p>
+          <strong>Jam Istirahat:</strong> {scheduleDetail.istirahatMulai} -{" "}
+          {scheduleDetail.istirahatSelesai}
+        </p>
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>Jenis Pekerjaan</th>
+              <th>Lokasi Kerja</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scheduleDetail.jenisPekerjaan &&
+              scheduleDetail.jenisPekerjaan.map((jp, index) => (
+                <tr key={index}>
+                  <td>{jp}</td>
+                  <td>{scheduleDetail.lokasiKerja[index]}</td>
+                </tr>
+              ))}
+          </tbody>
+        </Table>
+        <div
+          style={{
+            border: "1px solid #dee2e6",
+            borderRadius: "0.25rem",
+            padding: "0.375rem 0.75rem",
+            margin: "1rem 0",
+          }}
+        >
+          <strong>Catatan:</strong> {scheduleDetail.catatan}
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Tutup
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
 const SchedulePage = () => {
   const [schedules, setSchedules] = useState([]);
   const token = localStorage.getItem("token"); // Mengambil token dari localStorage
@@ -73,11 +137,19 @@ const SchedulePage = () => {
   const [jenisPekerjaan, setJenisPekerjaan] = useState([]);
   const [lokasi, setLokasi] = useState([]);
 
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [scheduleDetail, setScheduleDetail] = useState({});
+
+  const [selectedLokasi, setSelectedLokasi] = useState([]);
+  const [selectedJenisPekerjaan, setSelectedJenisPekerjaan] = useState([]);
+
   useEffect(() => {
     const fetchSchedules = async () => {
+      const userId = localStorage.getItem("user_id"); // Mengambil user_id dari localStorage
       try {
-        const response = await axios.get(
-          "http://iss.biz.id/be/api/schedules",
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/listjadwal`,
+          { user_id: userId },
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -92,7 +164,7 @@ const SchedulePage = () => {
       const token = localStorage.getItem("token");
       try {
         const response = await axios.get(
-          "http://iss.biz.id/be/api/jenis_pekerjaan",
+          `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -106,9 +178,12 @@ const SchedulePage = () => {
     const fetchLokasi = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://iss.biz.id/be/api/lokasi", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/lokasi`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setLokasi(response.data);
       } catch (error) {
         console.error(error);
@@ -118,9 +193,12 @@ const SchedulePage = () => {
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://iss.biz.id/be/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/users`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setUsers(response.data);
       } catch (error) {
         console.error(error);
@@ -186,6 +264,7 @@ const SchedulePage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const userId = localStorage.getItem("user_id"); // Mengambil user_id dari localStorage
     const token = localStorage.getItem("token");
     const formData = new FormData(event.target);
     const payload = Object.fromEntries(formData.entries());
@@ -196,6 +275,11 @@ const SchedulePage = () => {
     const jamSelesai = formData.get("jam_selesai");
     const restMulai = formData.get("istirahat_mulai");
     const restSelesai = formData.get("istirahat_selesai");
+
+    payload.lokasi_kerja = JSON.stringify(selectedLokasi.map(Number));
+    payload.jenis_pekerjaan = JSON.stringify(
+      selectedJenisPekerjaan.map(Number)
+    );
 
     const errorMessage = validateForm(
       tanggal,
@@ -212,7 +296,7 @@ const SchedulePage = () => {
 
     try {
       const response = await axios.post(
-        "http://iss.biz.id/be/api/schedules",
+        `${process.env.REACT_APP_API_URL}/api/schedules`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -235,15 +319,21 @@ const SchedulePage = () => {
     if (status !== "Approved") {
       try {
         // Mengirim request ke endpoint approve
-        await axios.put(`http://iss.biz.id/be/api/schedules/${id}`,{
-					'status': 'Approved'
-				}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/schedules/${id}`,
+          {
+            status: "Approved",
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-				setSchedules(schedules.map((schedule) => 
-					schedule.id === id ? { ...schedule, status: 'Approved' } : schedule
-				));
+        setSchedules(
+          schedules.map((schedule) =>
+            schedule.id === id ? { ...schedule, status: "Approved" } : schedule
+          )
+        );
         // Refresh atau update state setelah approve
       } catch (error) {
         console.error(error);
@@ -254,7 +344,7 @@ const SchedulePage = () => {
   const handleUpdate = async (id, updatedSchedule) => {
     try {
       await axios.put(
-        `http://iss.biz.id/be/api/schedules/${id}`,
+        `${process.env.REACT_APP_API_URL}/api/schedules/${id}`,
         updatedSchedule,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -271,11 +361,17 @@ const SchedulePage = () => {
     setShowConfirmDeleteModal(true); // Menampilkan modal konfirmasi
   };
 
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      {props.text}
+    </Tooltip>
+  );
+
   const handleConfirmDelete = async () => {
     if (scheduleToDelete && scheduleToDelete.status !== "Approved") {
       try {
         const response = await axios.delete(
-          `http://iss.biz.id/be/api/schedules/${scheduleToDelete.id}`,
+          `${process.env.REACT_APP_API_URL}/api/schedules/${scheduleToDelete.id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -299,6 +395,34 @@ const SchedulePage = () => {
     setShowConfirmDeleteModal(false); // Menutup modal konfirmasi
   };
 
+  const fetchScheduleDetail = async (scheduleId) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/schedule/detail`,
+        { scheduleId: scheduleId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setScheduleDetail(response.data);
+      setShowDetailModal(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleLokasiChange = (checked, id) => {
+    setSelectedLokasi((prev) =>
+      checked ? [...prev, id] : prev.filter((lokasiId) => lokasiId !== id)
+    );
+  };
+
+  const handleJenisPekerjaanChange = (checked, id) => {
+    setSelectedJenisPekerjaan((prev) =>
+      checked ? [...prev, id] : prev.filter((jpId) => jpId !== id)
+    );
+  };
+
   return (
     <>
       <style type="text/css">
@@ -314,18 +438,19 @@ const SchedulePage = () => {
 						justify-content: center;
 						margin-left: 10px;
 					}
+          .nav-dropdown .dropdown-toggle::after {
+            display: none;
+          }
 				`}
       </style>
-			<CustomNavbar />
-      <div className="container mt-5">
-        <div className="container mt-5">
-          <div className="container mt-5 d-flex justify-content-between">
-            <h2>List Jadwal Karyawan</h2>
-            <Button onClick={() => setShowModal(true)} variant="success">
-              Create New
-            </Button>
-          </div>
-
+      <div style={{ display: "flex", minHeight: "100vh" }}>
+        <CustomNavbar />
+        <div style={{ flex: 1, padding: "20px" }}>
+          {/* Konten utama SchedulePage di sini */}
+          <h2>List Jadwal Karyawan</h2>
+          <Button onClick={() => setShowModal(true)} variant="primary">
+            Create New
+          </Button>
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
               <Modal.Title style={{ fontSize: "1.5rem" }}>
@@ -359,30 +484,34 @@ const SchedulePage = () => {
                   />
                 </Form.Group>
 
-                {/* Lokasi Kerja */}
+                {/* Lokasi Kerja Checkbox Group */}
                 <Form.Group className="mb-3">
                   <Form.Label>Lokasi Kerja</Form.Label>
-                  <Form.Select name="lokasi_kerja" required>
-                    <option value="">Pilih Lokasi</option>
-                    {lokasi.map((loc) => (
-                      <option key={loc.id} value={loc.nama}>
-                        {loc.nama}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  {lokasi.map((loc) => (
+                    <Form.Check
+                      key={loc.id}
+                      type="checkbox"
+                      label={loc.nama}
+                      onChange={(e) =>
+                        handleLokasiChange(e.target.checked, loc.id)
+                      }
+                    />
+                  ))}
                 </Form.Group>
 
-                {/* Jenis Pekerjaan */}
+                {/* Jenis Pekerjaan Checkbox Group */}
                 <Form.Group className="mb-3">
                   <Form.Label>Jenis Pekerjaan</Form.Label>
-                  <Form.Select name="jenis_pekerjaan" required>
-                    <option value="">Pilih Jenis Pekerjaan</option>
-                    {jenisPekerjaan.map((jp) => (
-                      <option key={jp.id} value={jp.nama}>
-                        {jp.nama}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  {jenisPekerjaan.map((jp) => (
+                    <Form.Check
+                      key={jp.id}
+                      type="checkbox"
+                      label={jp.nama}
+                      onChange={(e) =>
+                        handleJenisPekerjaanChange(e.target.checked, jp.id)
+                      }
+                    />
+                  ))}
                 </Form.Group>
 
                 {/* Jam Mulai */}
@@ -482,111 +611,91 @@ const SchedulePage = () => {
             handleConfirm={handleConfirmDelete}
           />
 
+          <ScheduleDetailModal
+            show={showDetailModal}
+            handleClose={() => setShowDetailModal(false)}
+            scheduleDetail={scheduleDetail}
+          />
+
           <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Jenis Pekerjaan</th>
-								<th>Lokasi Kerja</th>
-                <th>Tanggal</th>
-                <th>Jam Mulai</th>
-                <th>Jam Selesai</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.map((schedule) => (
-                <tr key={schedule.id}>
-                  <td>{schedule.id}</td>
-                  <td>
-                    <EditableCell
-                      value={schedule.jenis_pekerjaan}
-                      name="jenis_pekerjaan"
-                      type="text"
-                      onChange={(e) =>
-                        handleUpdate(schedule.id, {
-                          jenis_pekerjaan: e.target.value,
-                        })
-                      }
-                    />
-                  </td>
-									<td>
-                    <EditableCell
-                      value={schedule.jenis_pekerjaan}
-                      name="jenis_pekerjaan"
-                      type="text"
-                      onChange={(e) =>
-                        handleUpdate(schedule.id, {
-                          jenis_pekerjaan: e.target.value,
-                        })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <EditableCell
-                      value={schedule.tanggal}
-                      name="tanggal"
-                      type="date"
-                      onChange={(e) =>
-                        handleUpdate(schedule.id, { jadwal: e.target.value })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <EditableCell
-                      value={schedule.jam_mulai}
-                      name="jam_mulai"
-                      type="time"
-                      onChange={(e) =>
-                        handleUpdate(schedule.id, { jam_mulai: e.target.value })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <EditableCell
-                      value={schedule.jam_selesai}
-                      name="jam_selesai"
-                      type="time"
-                      onChange={(e) =>
-                        handleUpdate(schedule.id, {
-                          jam_selesai: e.target.value,
-                        })
-                      }
-                    />
-                  </td>
-                  <td>{schedule.status}</td>
-                  <td>
-                    <button
-                      onClick={() =>
-                        handleApprove(schedule.id, schedule.status)
-                      }
-                      className={`btn ${
-                        schedule.status === "Approved"
-                          ? "btn-secondary"
-                          : "btn-success"
-                      }`}
-                      disabled={schedule.status === "Approved"}
-                    >
-                      Approve
-                    </button>{" "}
-                    <button
-                      onClick={() => handleDeleteClick(schedule)}
-                      className={`btn ${
-                        schedule.status === "Approved"
-                          ? "btn-secondary"
-                          : "btn-danger"
-                      }`}
-                      disabled={schedule.status === "Approved"}
-                    >
-                      Delete
-                    </button>
-                  </td>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Staff</th>
+                  <th>Tanggal</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
+              </thead>
+              <tbody>
+                {schedules.map((schedule) => (
+                  <tr key={schedule.scheduleId}>
+                    <td>{schedule.scheduleId}</td>
+                    <td>{schedule.name}</td>
+                    <td>
+                      <EditableCell
+                        value={schedule.tanggal}
+                        name="tanggal"
+                        type="date"
+                        onChange={(e) =>
+                          handleUpdate(schedule.scheduleId, {
+                            jadwal: e.target.value,
+                          })
+                        }
+                      />
+                    </td>
+                    <td>{schedule.status}</td>
+                    <td>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={renderTooltip({ text: "Approve" })}
+                      >
+                        <Button
+                          variant="success"
+                          onClick={() =>
+                            handleApprove(schedule.scheduleId, schedule.status)
+                          }
+                          disabled={schedule.status === "Approved"}
+                        >
+                          <BsCheckCircle />
+                        </Button>
+                      </OverlayTrigger>{" "}
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={renderTooltip({ text: "Delete" })}
+                      >
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDeleteClick(schedule)}
+                          disabled={schedule.status === "Approved"}
+                        >
+                          <BsTrash />
+                        </Button>
+                      </OverlayTrigger>{" "}
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={renderTooltip({ text: "Details" })}
+                      >
+                        <Button
+                          variant="info"
+                          onClick={() =>
+                            fetchScheduleDetail(schedule.scheduleId)
+                          }
+                        >
+                          <BsInfoCircle />
+                        </Button>
+                      </OverlayTrigger>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </table>
         </div>
+        <div
+          style={{ position: "absolute", top: 0, right: 0, padding: "10px" }}
+        ></div>
       </div>
     </>
   );

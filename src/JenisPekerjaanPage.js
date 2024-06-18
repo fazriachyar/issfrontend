@@ -17,9 +17,12 @@ const JenisPekerjaanPage = () => {
 
   const fetchJenisPekerjaan = async () => {
     try {
-      const response = await axios.get("http://iss.biz.id/be/api/jenis_pekerjaan", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setJenisPekerjaan(response.data);
     } catch (error) {
       console.error(error);
@@ -35,21 +38,34 @@ const JenisPekerjaanPage = () => {
     try {
       const response = selectedJenisPekerjaan
         ? await axios.put(
-            `http://iss.biz.id/be/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
+            `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
             formValues,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
-        : await axios.post("http://iss.biz.id/be/api/jenis_pekerjaan", formValues, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+        : await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan`,
+            formValues,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
 
       fetchJenisPekerjaan(); // Refresh data
       setShowModal(false);
+      setSelectedJenisPekerjaan(null);
+      setFormValues({ nama: "" });
+      setShowModal(false); // Tutup modal
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleAddClick = () => {
+    setSelectedJenisPekerjaan(null); // Reset selectedLokasi
+    setFormValues({ nama: "" }); // Reset formValues
+    setShowModal(true); // Buka modal
   };
 
   const handleEditClick = (jenisPekerjaan) => {
@@ -60,7 +76,7 @@ const JenisPekerjaanPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://iss.biz.id/be/api/jenis_pekerjaan/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchJenisPekerjaan(); // Refresh data
@@ -70,17 +86,14 @@ const JenisPekerjaanPage = () => {
   };
 
   return (
-    <>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <CustomNavbar />
-      <Container className="mt-5">
-        {/* Konten JenisPekerjaanPage */}
-        <Container className="mt-5">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="mb-0">Manajemen Pekerjaan</h2>
-            <Button variant="primary" onClick={() => setShowModal(true)}>
-              Tambah Pekerjaan
-            </Button>
-          </div>
+      <div style={{ flex: 1, padding: "20px" }}>
+        <Container>
+          <h2>Manajemen Pekerjaan</h2>
+          <Button variant="primary" onClick={handleAddClick} className="my-3">
+            Tambah Pekerjaan
+          </Button>
 
           <Table striped bordered hover>
             <thead>
@@ -113,7 +126,6 @@ const JenisPekerjaanPage = () => {
             </tbody>
           </Table>
 
-          {/* Modal for Create/Edit */}
           <Modal show={showModal} onHide={() => setShowModal(false)}>
             <Modal.Header closeButton>
               <Modal.Title>
@@ -138,9 +150,12 @@ const JenisPekerjaanPage = () => {
               </Form>
             </Modal.Body>
           </Modal>
+          <Modal show={showModal} onHide={() => setShowModal(false)}>
+            {/* ... Modal content ... */}
+          </Modal>
         </Container>
-      </Container>
-    </>
+      </div>
+    </div>
   );
 };
 
