@@ -6,7 +6,7 @@ import CustomNavbar from "./CustomNavbar";
 const LokasiPage = () => {
   const [lokasi, setLokasi] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedLokasi, setSelectedLokasi] = useState(null); // null untuk create, objek lokasi untuk edit
+  const [selectedLokasi, setSelectedLokasi] = useState(null);
   const [formValues, setFormValues] = useState({ nama: "" });
 
   const token = localStorage.getItem("token");
@@ -17,9 +17,12 @@ const LokasiPage = () => {
 
   const fetchLokasi = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/lokasi`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/lokasi`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setLokasi(response.data);
     } catch (error) {
       console.error(error);
@@ -33,37 +36,39 @@ const LokasiPage = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = selectedLokasi
-        ? await axios.put(
-            `${process.env.REACT_APP_API_URL}/api/lokasi/${selectedLokasi.id}`,
-            formValues,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          )
-        : await axios.post(`${process.env.REACT_APP_API_URL}/api/lokasi`, formValues, {
+      if (selectedLokasi) {
+        await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/lokasi/${selectedLokasi.id}`,
+          formValues,
+          {
             headers: { Authorization: `Bearer ${token}` },
-          });
-
+          }
+        );
+      } else {
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/lokasi`,
+          formValues,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
       fetchLokasi(); // Refresh data
-      setShowModal(false);
-      setSelectedLokasi(null);
-      setFormValues({ nama: "" });
-      setShowModal(false); // Tutup modal
+      handleCloseModal(); // Close modal after submit
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleAddClick = () => {
-    setSelectedLokasi(null); // Reset selectedLokasi
-    setFormValues({ nama: "" }); // Reset formValues
-    setShowModal(true); // Buka modal
+    setSelectedLokasi(null);
+    setFormValues({ nama: "" });
+    setShowModal(true);
   };
 
   const handleEditClick = (lokasi) => {
     setSelectedLokasi(lokasi);
-    setFormValues(lokasi);
+    setFormValues({ nama: lokasi.nama });
     setShowModal(true);
   };
 
@@ -76,6 +81,12 @@ const LokasiPage = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedLokasi(null);
+    setFormValues({ nama: "" });
+    setShowModal(false);
   };
 
   return (
@@ -120,7 +131,7 @@ const LokasiPage = () => {
           </Table>
 
           {/* Modal for Create/Edit */}
-          <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
               <Modal.Title>
                 {selectedLokasi ? "Edit Lokasi" : "Tambah Lokasi"}
@@ -143,9 +154,6 @@ const LokasiPage = () => {
                 </Button>
               </Form>
             </Modal.Body>
-          </Modal>
-          <Modal show={showModal} onHide={() => setShowModal(false)}>
-            {/* ... Modal content ... */}
           </Modal>
         </Container>
       </div>

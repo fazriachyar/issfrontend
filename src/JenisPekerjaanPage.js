@@ -6,7 +6,7 @@ import CustomNavbar from "./CustomNavbar";
 const JenisPekerjaanPage = () => {
   const [jenisPekerjaan, setJenisPekerjaan] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedJenisPekerjaan, setSelectedJenisPekerjaan] = useState(null); // null untuk create, objek jenisPekerjaan untuk edit
+  const [selectedJenisPekerjaan, setSelectedJenisPekerjaan] = useState(null);
   const [formValues, setFormValues] = useState({ nama: "" });
 
   const token = localStorage.getItem("token");
@@ -36,53 +36,60 @@ const JenisPekerjaanPage = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = selectedJenisPekerjaan
-        ? await axios.put(
-            `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
-            formValues,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          )
-        : await axios.post(
-            `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan`,
-            formValues,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
+      if (selectedJenisPekerjaan) {
+        await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${selectedJenisPekerjaan.id}`,
+          formValues,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      } else {
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan`,
+          formValues,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
       fetchJenisPekerjaan(); // Refresh data
-      setShowModal(false);
-      setSelectedJenisPekerjaan(null);
-      setFormValues({ nama: "" });
-      setShowModal(false); // Tutup modal
+      handleCloseModal(); // Close modal after submit
     } catch (error) {
       console.error(error);
     }
   };
 
   const handleAddClick = () => {
-    setSelectedJenisPekerjaan(null); // Reset selectedLokasi
-    setFormValues({ nama: "" }); // Reset formValues
-    setShowModal(true); // Buka modal
+    setSelectedJenisPekerjaan(null);
+    setFormValues({ nama: "" });
+    setShowModal(true);
   };
 
   const handleEditClick = (jenisPekerjaan) => {
     setSelectedJenisPekerjaan(jenisPekerjaan);
-    setFormValues(jenisPekerjaan);
+    setFormValues({ nama: jenisPekerjaan.nama });
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/jenis_pekerjaan/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       fetchJenisPekerjaan(); // Refresh data
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedJenisPekerjaan(null);
+    setFormValues({ nama: "" });
+    setShowModal(false);
   };
 
   return (
@@ -103,20 +110,20 @@ const JenisPekerjaanPage = () => {
               </tr>
             </thead>
             <tbody>
-              {jenisPekerjaan.map((loc) => (
-                <tr key={loc.id}>
-                  <td>{loc.nama}</td>
+              {jenisPekerjaan.map((jp) => (
+                <tr key={jp.id}>
+                  <td>{jp.nama}</td>
                   <td>
                     <Button
                       variant="warning"
-                      onClick={() => handleEditClick(loc)}
+                      onClick={() => handleEditClick(jp)}
                       className="me-2"
                     >
                       Edit
                     </Button>
                     <Button
                       variant="danger"
-                      onClick={() => handleDelete(loc.id)}
+                      onClick={() => handleDelete(jp.id)}
                     >
                       Delete
                     </Button>
@@ -126,7 +133,8 @@ const JenisPekerjaanPage = () => {
             </tbody>
           </Table>
 
-          <Modal show={showModal} onHide={() => setShowModal(false)}>
+          {/* Modal for Create/Edit */}
+          <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
               <Modal.Title>
                 {selectedJenisPekerjaan ? "Edit Pekerjaan" : "Tambah Pekerjaan"}
@@ -149,9 +157,6 @@ const JenisPekerjaanPage = () => {
                 </Button>
               </Form>
             </Modal.Body>
-          </Modal>
-          <Modal show={showModal} onHide={() => setShowModal(false)}>
-            {/* ... Modal content ... */}
           </Modal>
         </Container>
       </div>

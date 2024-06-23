@@ -425,24 +425,6 @@ const SchedulePage = () => {
 
   return (
     <>
-      <style type="text/css">
-        {`
-					.initials-circle {
-						width: 35px;
-						height: 35px;
-						border-radius: 50%;
-						background-color: #007bff;
-						color: white;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						margin-left: 10px;
-					}
-          .nav-dropdown .dropdown-toggle::after {
-            display: none;
-          }
-				`}
-      </style>
       <div style={{ display: "flex", minHeight: "100vh" }}>
         <CustomNavbar />
         <div style={{ flex: 1, padding: "20px" }}>

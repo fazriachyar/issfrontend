@@ -19,51 +19,73 @@ const CustomNavbar = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ width: "250px", background: "#f8f9fa", padding: "10px" }}>
-        <h2>ISS HIGHSCOPE</h2>
-        <Nav className="flex-column">
-          <Nav.Link as={Link} to="/schedules">
-            <FaCalendarAlt /> Jadwal
-          </Nav.Link>
-          <Nav.Link as={Link} to="/jenis-pekerjaan">
-            <FaBriefcase /> Jenis Pekerjaan
-          </Nav.Link>
-          <Nav.Link as={Link} to="/lokasi">
-            <FaMapMarkerAlt /> Lokasi
-          </Nav.Link>
-          {/* ... other nav links with icons ... */}
-        </Nav>
-      </div>
-      <div style={{ flex: 1, padding: "10px" }}>
-        {/* Main content goes here */}
-      </div>
-      <div style={{ position: "absolute", top: 0, right: 0, padding: "10px" }}>
-        <NavDropdown
-          title={
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-              }}
-            >
-              <span style={{ marginRight: "10px" }}>{username}</span>
-              <div className="initials-circle">{initials}</div>
-            </div>
-          }
-          id="nav-dropdown"
-          align="end"
-          drop="down"
-          renderMenuOnMount={true}
+    <>
+      <div style={{ display: "flex", height: "100vh" }}>
+        <div style={{ width: "250px", background: "#f8f9fa", padding: "10px" }}>
+          <h2>ISS HIGHSCOPE</h2>
+          <Nav className="flex-column">
+            <Nav.Link as={Link} to="/schedules">
+              <FaCalendarAlt /> Jadwal
+            </Nav.Link>
+            <Nav.Link as={Link} to="/jenis-pekerjaan">
+              <FaBriefcase /> Jenis Pekerjaan
+            </Nav.Link>
+            <Nav.Link as={Link} to="/lokasi">
+              <FaMapMarkerAlt /> Lokasi
+            </Nav.Link>
+            {/* ... other nav links with icons ... */}
+          </Nav>
+        </div>
+        <div style={{ flex: 1, padding: "10px" }}>
+          {/* Main content goes here */}
+        </div>
+        <div
+          style={{ position: "absolute", top: 0, right: 0, padding: "10px" }}
         >
-          <NavDropdown.Item as={Link} to="/profile">
-            Profile
-          </NavDropdown.Item>
-          <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
-        </NavDropdown>
+          <NavDropdown
+            title={
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ marginRight: "10px" }}>{username}</span>
+                <div className="initials-circle">{initials}</div>
+              </div>
+            }
+            id="nav-dropdown"
+            align="end"
+            drop="down"
+            renderMenuOnMount={true}
+          >
+            <NavDropdown.Item as={Link} to="/profile">
+              Profile
+            </NavDropdown.Item>
+            <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+          </NavDropdown>
+        </div>
       </div>
-    </div>
+      <style type="text/css">
+        {`
+          .initials-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            }
+            .nav-dropdown .dropdown-toggle::after {
+            display: none;
+          }
+        `}
+      </style>
+    </>
   );
 };
 

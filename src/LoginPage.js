@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Menggunakan useNavigate dari react-router-dom
-import "bootstrap/dist/css/bootstrap.min.css"; // Pastikan Anda telah menginstal Bootstrap
+import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "./LoadingSpinner";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // Hook untuk melakukan navigasi
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    // Fungsi ini sudah async
+    setIsLoading(true); // Mulai loading sebelum request
     try {
       const payload = { email, password };
       const response = await axios.post(
@@ -19,16 +23,19 @@ export default function LoginPage() {
       if (response.data.success) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user_id", response.data.user.id);
-        localStorage.setItem("username", response.data.user.name); // Menyimpan token di localStorage
+        localStorage.setItem("username", response.data.user.name);
         navigate("/schedules"); // Redirect ke halaman jadwal
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false); // Hentikan loading setelah request selesai
     }
   };
 
   return (
     <div className="container mt-5">
+      {isLoading && <LoadingSpinner />}
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card">
@@ -68,4 +75,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-};
+}
